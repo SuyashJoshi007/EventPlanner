@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["*"],
+      "@components/*": ["components/ui/*"],
+      "@assets/*": ["assets/*"],
+      "@createEvent/*": ["createEventManagement/*"]
+    }
+  },
+  "include": ["src"]
+}
