@@ -77,9 +77,9 @@ export default function CreateEvent({
 
   return (
     <div className="max-w-2xl mx-auto rounded-2xl bg-white p-8 shadow-lg mt-3">
-      <h2 className="text-2xl font-bold mb-6 text-center">
+      <h1 className="text-3xl font-bold mb-6 text-center text-blue-500">
         {initialData ? "Edit Event" : "Create Event"}
-      </h2>
+      </h1>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
           <FormField
@@ -177,7 +177,7 @@ export default function CreateEvent({
           />
 
           <div className="flex justify-end gap-3 pt-4">
-            <Button type="submit" className="rounded-xl">
+            <Button type="submit" className="rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition">
               {initialData ? "Update" : "Create"}
             </Button>
             <Button

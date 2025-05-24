@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import EventDetails from "./EventDetails";
+import EditEventForm from "./EditEventForm";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,10 +29,6 @@ export default function MyEvents() {
     setEvents(savedEvents);
   }, []);
 
-  function handleView(event) {
-    setSelectedEvent(event);
-  }
-
   function confirmEdit(event) {
     setEventToEdit(event);
     setEditDialogOpen(true);
@@ -39,6 +37,23 @@ export default function MyEvents() {
   function handleEditConfirmed() {
     setIsEditing(true);
     setEditDialogOpen(false);
+  }
+
+  function handleSaveEdit(updatedEvent) {
+    const updated = events.map((e) =>
+      e.id === updatedEvent.id ? updatedEvent : e
+    );
+    setEvents(updated);
+    localStorage.setItem("events", JSON.stringify(updated));
+    setSelectedEvent(updatedEvent);
+    setIsEditing(false);
+    setEventToEdit(null);
+  }
+
+  function handleCancelEdit() {
+    setIsEditing(false);
+    setEditDialogOpen(false);
+    setEventToEdit(null);
   }
 
   function confirmDelete(event) {
@@ -57,131 +72,90 @@ export default function MyEvents() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-6 min-h-screen">
-      <h1 className="text-4xl font-semibold text-indigo-600 mb-8">My Events</h1>
+    <div className="relative max-w-4xl mx-auto px-4 py-6">
+      <h1 className="text-3xl font-bold text-center mb-6 text-blue-500">My Events</h1>
 
-      {isEditing ? (
-        <div className="bg-white shadow-md rounded-lg p-6">
-          <h2 className="text-2xl font-semibold text-indigo-700 mb-4">Edit Event</h2>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              const updated = events.map((e) =>
-                e.id === eventToEdit.id ? eventToEdit : e
-              );
-              setEvents(updated);
-              localStorage.setItem("events", JSON.stringify(updated));
-              setIsEditing(false);
-              setEventToEdit(null);
-              setSelectedEvent(null);
-            }}
-          >
-            <label className="block mb-3">
-              <span className="text-gray-700">Name:</span>
-              <input
-                type="text"
-                value={eventToEdit.name}
-                onChange={(e) =>
-                  setEventToEdit({ ...eventToEdit, name: e.target.value })
-                }
-                className="w-full mt-1 p-2 border rounded-md"
-                required
-              />
-            </label>
-
-            <label className="block mb-4">
-              <span className="text-gray-700">Description:</span>
-              <textarea
-                value={eventToEdit.description}
-                onChange={(e) =>
-                  setEventToEdit({ ...eventToEdit, description: e.target.value })
-                }
-                className="w-full mt-1 p-2 border rounded-md"
-                rows={4}
-                required
-              />
-            </label>
-
-            <div className="flex gap-4">
-              <button
-                type="submit"
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-              >
-                Save
-              </button>
-              <button
-                type="button"
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition"
-                onClick={() => {
-                  setIsEditing(false);
-                  setEventToEdit(null);
-                }}
-              >
-                Cancel
-              </button>
+      {!selectedEvent ? (
+        <div className="mt-8">
+          {events.length === 0 ? (
+            <p className="text-gray-500 text-center">No events found.</p>
+          ) : (
+            <div className="grid md:grid-cols-2 gap-6">
+              {events.map((event) => (
+                <div
+                  key={event.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setSelectedEvent(event)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      setSelectedEvent(event);
+                    }
+                  }}
+                  className={`p-6 rounded-lg cursor-pointer border transition-transform duration-300 ease-in-out
+                    ${
+                      selectedEvent?.id === event.id
+                        ? "bg-indigo-100 border-indigo-500 shadow-lg scale-105"
+                        : "bg-white border-gray-200 hover:border-indigo-400 hover:scale-[1.03]"
+                    }`}
+                >
+                  <h3 className="text-2xl font-semibold text-indigo-700 mb-1 truncate">
+                    {event.name}
+                  </h3>
+                  <p className="text-gray-600 mb-2 line-clamp-1">
+                    {event.location}
+                  </p>
+                  <p className="text-sm text-gray-500 font-mono tracking-wide">
+                    {new Date(event.timestamp || event.date).toLocaleString(
+                      undefined,
+                      {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      }
+                    )}
+                  </p>
+                </div>
+              ))}
             </div>
-          </form>
+          )}
         </div>
-      ) : selectedEvent ? (
-        <EventDetails
-          event={selectedEvent}
-          onEdit={() => confirmEdit(selectedEvent)}
-          onDelete={() => confirmDelete(selectedEvent)}
-          onBack={() => setSelectedEvent(null)}
+      ) : isEditing && eventToEdit ? (
+        <EditEventForm
+          event={eventToEdit}
+          onSave={handleSaveEdit}
+          onCancel={handleCancelEdit}
         />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {events.length === 0 ? (
-            <p className="text-gray-400 italic">No events found.</p>
-          ) : (
-            events.map((event) => (
-              <div
-                key={event.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => handleView(event)}
-                onKeyDown={(e) => e.key === "Enter" && handleView(event)}
-                className="bg-white rounded-lg p-5 cursor-pointer border border-gray-400 transition transform duration-200 ease-in-out hover:scale-[1.04] hover:border-indigo-700 active:scale-[0.97]"
-              >
-                <h2 className="text-lg font-semibold text-indigo-700 mb-2">
-                  {event.name}
-                </h2>
-                <p
-                  className="text-gray-600 text-sm leading-relaxed"
-                  style={{
-                    display: "-webkit-box",
-                    WebkitLineClamp: 3,
-                    WebkitBoxOrient: "vertical",
-                    overflow: "hidden",
-                  }}
-                >
-                  {event.description || "No description provided."}
-                </p>
-              </div>
-            ))
-          )}
+        <div className="fixed inset-0 bg-white bg-opacity-90 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-900 p-6 rounded-xl max-w-xl w-full mt-7">
+            <EventDetails
+              event={selectedEvent}
+              onEdit={() => confirmEdit(selectedEvent)}
+              onDelete={() => confirmDelete(selectedEvent)}
+              onBack={() => setSelectedEvent(null)}
+            />
+          </div>
         </div>
       )}
 
-      {/* Delete AlertDialog */}
+      {/* Delete Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="bg-white border border-gray-200 rounded-lg shadow-lg p-6 max-w-md mx-auto">
+        <AlertDialogContent className="bg-black text-white border border-gray-700 w-full max-w-md mx-4 sm:mx-auto rounded-lg p-6">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-gray-900 text-xl font-semibold">
+            <AlertDialogTitle className="text-white text-lg sm:text-xl font-semibold">
               Are you absolutely sure?
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-600 mt-2 mb-6">
-              This action cannot be undone. This will permanently delete your{" "}
-              <strong className="text-gray-900">{eventToDelete?.name}</strong>{" "}
-              and remove your data.
+            <AlertDialogDescription className="text-gray-300 mt-2 text-sm sm:text-base">
+              This action cannot be undone. This will permanently delete
+              <strong className="text-white"> {eventToDelete?.name}</strong>.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex justify-end gap-4">
-            <AlertDialogCancel className="px-4 py-2 bg-gray-200 rounded-lg text-gray-700 hover: transition">
+          <AlertDialogFooter className="mt-6 flex justify-end gap-4">
+            <AlertDialogCancel className="bg-white text-black hover:bg-gray-200 px-4 py-2 rounded-md transition">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+              className="bg-red-600 text-white hover:bg-red-700 px-4 py-2 rounded-md transition"
               onClick={handleDelete}
             >
               Delete
@@ -190,24 +164,24 @@ export default function MyEvents() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Edit AlertDialog */}
+      {/* Edit Dialog */}
       <AlertDialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <AlertDialogContent className="bg-white border border-gray-200 rounded-lg shadow-lg p-6 max-w-md mx-auto">
+        <AlertDialogContent className="bg-white text-black border border-gray-300 w-full max-w-md mx-4 sm:mx-auto rounded-lg p-6">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-gray-900 text-xl font-semibold">
+            <AlertDialogTitle className="text-gray-900 text-lg sm:text-xl font-semibold">
               Edit this event?
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-600 mt-2 mb-6">
-              Are you sure you want to edit{" "}
-              <strong className="text-gray-900">{eventToEdit?.name}</strong>?
+            <AlertDialogDescription className="text-gray-700 mt-2 text-sm sm:text-base">
+              Are you sure you want to edit
+              <strong className="text-gray-900"> {eventToEdit?.name}</strong>?
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex justify-end gap-4">
-            <AlertDialogCancel className="px-4 py-2 bg-gray-200 rounded-lg text-gray-700 hover: transition">
+          <AlertDialogFooter className="mt-6 flex justify-end gap-4">
+            <AlertDialogCancel className="bg-gray-200 text-gray-700 hover:bg-gray-300 px-4 py-2 rounded-md transition">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+              className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-md transition"
               onClick={handleEditConfirmed}
             >
               Edit
