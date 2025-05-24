@@ -72,7 +72,7 @@ export default function MyEvents() {
   }
 
   return (
-    <div className="relative max-w-4xl mx-auto px-4 py-6">
+    <div className="relative max-w-4xl mx-auto px-4 py-6 min-h-screen">
       <h1 className="text-3xl font-bold text-center mb-6 text-blue-500">My Events</h1>
 
       {!selectedEvent ? (
@@ -140,7 +140,7 @@ export default function MyEvents() {
 
       {/* Delete Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="bg-black text-white border border-gray-700 w-full max-w-md mx-4 sm:mx-auto rounded-lg p-6">
+        <AlertDialogContent className="bg-white text-black border border-gray-300 w-full max-w-md mx-4 sm:mx-auto rounded-lg p-6">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white text-lg sm:text-xl font-semibold">
               Are you absolutely sure?
