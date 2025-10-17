@@ -1,191 +1,196 @@
-import React from "react";
-import PropTypes from "prop-types";
-import { motion } from "framer-motion";
+"use client";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { Link } from "react-router-dom";
 
-// --- Mock shadcn/ui Components ---
-// In a real app, these would be imported from your UI library
-const Form = ({ children, ...props }) => <form {...props}>{children}</form>;
-const FormControl = ({ children }) => <>{children}</>;
-const FormField = ({ render }) => render({ field: {}, fieldState: {} });
-const FormItem = ({ children }) => <div className="space-y-1">{children}</div>;
-const FormLabel = ({ children }) => <label className="block mb-1 text-sm font-semibold text-slate-300">{children}</label>;
-const FormMessage = ({ children }) => <p className="text-sm text-red-400 mt-1">{children}</p>;
-const Input = (props) => <input {...props} />;
-const Textarea = (props) => <textarea {...props} />;
-const Button = ({ children, ...props }) => <button {...props}>{children}</button>;
-
-// --- Zod Schema for Validation ---
+// Schema with separate date and time
 const EventSchema = z.object({
   name: z.string().min(1, { message: "Event name is required" }),
-  location: z.string().optional(),
-  date: z.string().min(1, { message: "Date and time are required" }),
+  date: z.string().min(1, { message: "Date is required" }),
+  time: z.string().min(1, { message: "Time is required" }),
+  location: z.string().min(1, { message: "Location is required" }),
   description: z.string().optional(),
 });
 
-
-export default function EditEventForm({ event, onSave, onCancel }) {
-  // Helper to format date for datetime-local input
-  const getInitialDateTime = (isoDate) => {
-    if (!isoDate) return "";
-    const dateObj = new Date(isoDate);
-    const timezoneOffset = dateObj.getTimezoneOffset() * 60000;
-    const localISOTime = new Date(dateObj.getTime() - timezoneOffset).toISOString().slice(0, 16);
-    return localISOTime;
-  };
-
+export default function CreateEvent({
+  initialData = null,
+  onSubmitSuccess,
+  onCancel,
+}) {
   const form = useForm({
     resolver: zodResolver(EventSchema),
-    defaultValues: {
-      name: event?.name || "",
-      location: event?.location || "",
-      date: getInitialDateTime(event?.date),
-      description: event?.description || "",
+    defaultValues: initialData || {
+      name: "",
+      date: "",
+      time: "",
+      location: "",
+      description: "",
     },
   });
 
   function onSubmit(data) {
-    const eventToSave = {
-      ...event,
-      id: event?.id || null,
-      ...data,
-      date: new Date(data.date).toISOString(), // Convert back to ISO string for saving
-    };
-    onSave(eventToSave);
+    const timestamp = new Date(`${data.date}T${data.time}`).toISOString();
+    const newEvent = { ...data, timestamp, id: Date.now() };
+
+    // Read existing events or empty array
+    const storedEvents = JSON.parse(localStorage.getItem("events") || "[]");
+
+    // Add new event
+    storedEvents.push(newEvent);
+
+    // Save updated array
+    localStorage.setItem("events", JSON.stringify(storedEvents));
+
+    toast(
+      <div className="flex flex-col">
+        <h2 className="font-semibold text-grey-600">
+          {initialData ? "Event updated" : "Event created"}
+        </h2>
+      </div>
+    );
+
+    onSubmitSuccess?.(newEvent);
+    if (!initialData) {
+      form.reset({
+        name: "",
+        date: "",
+        time: "",
+        location: "",
+        description: "",
+      });
+    }
   }
 
   return (
-    <div 
-      className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm flex justify-center items-center z-50 p-4"
-      onClick={onCancel}
-    >
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="w-full max-w-2xl mx-auto bg-black/20 backdrop-blur-xl border border-white/10 rounded-xl p-6 md:p-8"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h2 className="text-3xl font-bold text-white mb-6">
-          {event ? 'Edit Event' : 'Create New Event'}
-        </h2>
-        
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 text-white">
-            <div className="grid md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field, fieldState }) => (
-                  <FormItem>
-                    <FormLabel>Event Name</FormLabel>
-                    <FormControl>
-                      <Input
-                        className="w-full p-2 rounded bg-slate-700/50 border border-slate-600 focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500"
-                        placeholder="e.g., Team Offsite"
-                        {...field}
-                      />
-                    </FormControl>
-                    {fieldState.error && <FormMessage>{fieldState.error.message}</FormMessage>}
-                  </FormItem>
-                )}
-              />
+    <div className="max-w-2xl mx-auto rounded-2xl bg-white p-8 shadow-lg mt-3">
+      <h1 className="text-3xl font-bold mb-6 text-center text-blue-500">
+        {initialData ? "Edit Event" : "Create Event"}
+      </h1>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Event Name</FormLabel>
+                <FormControl>
+                  <Input
+                    className="rounded-xl border-gray-300 focus:border-primary focus:ring-primary"
+                    placeholder="e.g. Hackathon 2025"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-              <FormField
-                control={form.control}
-                name="location"
-                render={({ field, fieldState }) => (
-                  <FormItem>
-                    <FormLabel>Location</FormLabel>
-                    <FormControl>
-                      <Input
-                        className="w-full p-2 rounded bg-slate-700/50 border border-slate-600 focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500"
-                        placeholder="e.g., Conference Hall A"
-                        {...field}
-                      />
-                    </FormControl>
-                     {fieldState.error && <FormMessage>{fieldState.error.message}</FormMessage>}
-                  </FormItem>
-                )}
-              />
-            </div>
+          {/* Date Field */}
+          <FormField
+            control={form.control}
+            name="date"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Date</FormLabel>
+                <FormControl>
+                  <Input
+                    type="date"
+                    className="rounded-xl border-gray-300 focus:border-primary focus:ring-primary"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="date"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel>Date & Time</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="datetime-local"
-                      className="w-full p-2 rounded bg-slate-700/50 border border-slate-600 focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500"
-                      {...field}
-                    />
-                  </FormControl>
-                   {fieldState.error && <FormMessage>{fieldState.error.message}</FormMessage>}
-                </FormItem>
-              )}
-            />
+          {/* Time Field */}
+          <FormField
+            control={form.control}
+            name="time"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Time</FormLabel>
+                <FormControl>
+                  <Input
+                    type="time"
+                    className="rounded-xl border-gray-300 focus:border-primary focus:ring-primary"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      rows={5}
-                      className="w-full p-2 rounded bg-slate-700/50 border border-slate-600 focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500"
-                      placeholder="Add some details about the event..."
-                      {...field}
-                    />
-                  </FormControl>
-                   {fieldState.error && <FormMessage>{fieldState.error.message}</FormMessage>}
-                </FormItem>
-              )}
-            />
-            
-            <div className="flex justify-end gap-4 pt-4">
-              <Button
-                type="button"
-                onClick={onCancel}
-                className="bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 px-5 rounded-lg transition-colors"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                className="bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold py-2 px-5 rounded-lg transition-colors"
-              >
-                {event ? 'Save Changes' : 'Create Event'}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </motion.div>
-      <style>{`
-        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-            filter: invert(0.8);
-        }
-      `}</style>
+          {/* Location */}
+          <FormField
+            control={form.control}
+            name="location"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Location</FormLabel>
+                <FormControl>
+                  <Input
+                    className="rounded-xl border-gray-300 focus:border-primary focus:ring-primary"
+                    placeholder="e.g. VIT Chennai"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Description */}
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <Textarea
+                    className="rounded-xl border-gray-300 focus:border-primary focus:ring-primary"
+                    placeholder="Optional description..."
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="flex justify-end gap-3 pt-4">
+            <Button type="submit" className="rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition">
+              {initialData ? "Update" : "Create"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-xl"
+              onClick={onCancel}
+            >
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </Form>
     </div>
   );
 }
-
-EditEventForm.propTypes = {
-  event: PropTypes.shape({
-    id: PropTypes.string,
-    name: PropTypes.string,
-    date: PropTypes.string, // Expecting ISO string
-    location: PropTypes.string,
-    description: PropTypes.string,
-  }),
-  onSave: PropTypes.func.isRequired,
-  onCancel: PropTypes.func.isRequired,
-};
-

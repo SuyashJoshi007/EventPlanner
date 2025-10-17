@@ -4,19 +4,15 @@ import CreateEvent from './create-event';
 import HomePage from './components/ui/Custom/HomePage';
 import MyEvents from './components/ui/Custom/MyEvents';
 import DashBoard from './components/ui/Custom/DashBoard';
-import GlobalBackground from './components/ui/Custom/GlobalBackground';
 
 function App() {
   return (
-    <>
-      <GlobalBackground /> {/* ✅ global animated background */}
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/dashboard" element={<DashBoard />} />
-        <Route path="/create-event" element={<CreateEvent />} />
-        <Route path="/my-events" element={<MyEvents />} />
-      </Routes>
-    </>
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/dashboard" element={<DashBoard />} />
+      <Route path="/create-event" element={<CreateEvent/>} />
+      <Route path="/my-events" element={<MyEvents/>} />
+    </Routes>
   );
 }
 

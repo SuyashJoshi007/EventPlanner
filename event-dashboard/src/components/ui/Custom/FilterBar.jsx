@@ -1,24 +1,10 @@
 import React, { useState } from "react";
-import PropTypes from "prop-types";
 
 export default function FilterBar({ onFilter }) {
   const [search, setSearch] = useState("");
   const [location, setLocation] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-
-  const clearFilters = () => {
-    setSearch("");
-    setLocation("");
-    setStartDate("");
-    setEndDate("");
-    onFilter({
-      search: "",
-      location: "",
-      startDate: null,
-      endDate: null,
-    });
-  };
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -33,79 +19,58 @@ export default function FilterBar({ onFilter }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-4 bg-black/20 backdrop-blur-xl border border-white/10 p-4 rounded-xl"
+      className="grid md:grid-cols-2 gap-4 bg-white p-4 rounded-xl shadow-md border"
     >
-      <div className="space-y-3">
-        <div>
-          <label className="block text-sm font-semibold text-slate-300 mb-1">Search Name</label>
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Filter by name..."
-            className="w-full p-2 rounded bg-slate-700/50 border border-slate-600 focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500 transition-colors"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold text-slate-300 mb-1">Location</label>
-          <input
-            type="text"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder="Filter by location..."
-            className="w-full p-2 rounded bg-slate-700/50 border border-slate-600 focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500 transition-colors"
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-semibold text-slate-300 mb-1">Start Date</label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="w-full p-2 rounded bg-slate-700/50 border border-slate-600 focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500 transition-colors"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-slate-300 mb-1">End Date</label>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="w-full p-2 rounded bg-slate-700/50 border border-slate-600 focus:ring-2 focus:ring-fuchsia-500 focus:border-fuchsia-500 transition-colors"
-              />
-            </div>
-        </div>
+      <div className="flex flex-col">
+        <label className="text-sm font-medium mb-1">Search Name</label>
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by event name"
+          className="p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
       </div>
 
-      <div className="flex items-center gap-3 pt-2">
-         <button
-          type="button"
-          onClick={clearFilters}
-          className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded-lg transition-colors"
-        >
-          Reset
-        </button>
+      <div className="flex flex-col">
+        <label className="text-sm font-medium mb-1">Location</label>
+        <input
+          type="text"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          placeholder="Enter location"
+          className="p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      <div className="flex flex-col">
+        <label className="text-sm font-medium mb-1">Start Date</label>
+        <input
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          className="p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      <div className="flex flex-col">
+        <label className="text-sm font-medium mb-1">End Date</label>
+        <input
+          type="date"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          className="p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      <div className="md:col-span-2 text-right">
         <button
           type="submit"
-          className="w-full bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-all"
         >
-          Apply Filters
+          Filter Events
         </button>
       </div>
-       <style>{`
-        input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(0.8);
-        }
-      `}</style>
     </form>
   );
 }
-
-FilterBar.propTypes = {
-    onFilter: PropTypes.func.isRequired,
-};
-
