@@ -96,24 +96,26 @@ To deploy:
     Vercel will automatically detect the Vite configuration and handle deployment.
 
     Once deployed, you’ll get a live URL where your app is accessible.
-
-🧠 Folder Structure
+```
+## 📂 Folder Structure
 
 event-planner-app/
-├── public/                # Static assets
+├── public/ # Static assets (favicon, images, etc.)
 ├── src/
-│   ├── components/        # Reusable UI components
-│   ├── pages/             # Individual pages (Home, Dashboard, EventDetails)
-│   ├── context/           # Global state using Context API
-│   ├── hooks/             # Custom React hooks
-│   ├── utils/             # Helper functions
-│   ├── App.jsx            # Root component
-│   ├── main.jsx           # Entry point
-│   └── index.css          # Global styles
-├── .eslintrc.cjs          # ESLint configuration
-├── package.json           # Project metadata and dependencies
-├── vite.config.js         # Vite configuration
-└── README.md              # Project documentation
+│ ├── components/ # Reusable UI components (e.g., Navbar, Button, Modal)
+│ ├── pages/ # Page-level components (Home, Dashboard, EventDetails)
+│ ├── context/ # Global state management using React Context API
+│ ├── hooks/ # Custom React hooks for modular logic
+│ ├── utils/ # Utility functions and helper modules
+│ ├── App.jsx # Root component defining routes and layout
+│ ├── main.jsx # Application entry point (ReactDOM rendering)
+│ └── index.css # Global styles and Tailwind imports
+├── .eslintrc.cjs # ESLint configuration for code quality
+├── package.json # Project metadata and dependencies
+├── vite.config.js # Vite build and development configuration
+└── README.md # Project documentation
+```
+
 
 🧩 Future Enhancements
 
